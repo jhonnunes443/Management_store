@@ -1,21 +1,25 @@
 import sqlite3
+from pathlib import Path
+
+database = Path("estoque.db")
 
 
-class Gestão:
-    def _init_(self, banco):
+class Gestão:        
+    def __init__(self, banco):
         self.conn = sqlite3.connect(banco)
         self.criar_tabela_estoque()
 
     def criar_tabela_estoque(self):
         cursor = self.conn.cursor()
         cursor.execute("""
-            CREATE TABLE IF NOT EXISTS estoque (
-                id INTEGER PRIMARY KEY,
-                produto TEXT,
-                quantidade INTEGER
-            )""")
-        #save database
+                CREATE TABLE IF NOT EXISTS estoque (
+                    id INTEGER PRIMARY KEY,
+                    produto TEXT,
+                    quantidade INTEGER
+                )""")
+            #save database
         self.conn.commit()
+
 
     def adicionar_produto(self, produto, quantidade):
         cursor = self.conn.cursor()
@@ -57,16 +61,24 @@ class Gestão:
         produtos = cursor.fetchall()
         #Bring the first product "[0]"
         return [produto[0] for produto in produtos]
+    
+    def excluir_produto(self, produto):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM estoque WHERE produto = ?", (produto,))
+        self.conn.commit()
 
 sistema = Gestão("estoque.db")
 
-sistema.adicionar_produto("camiseta", 50)
-sistema.adicionar_produto("Calça Jeans", 30)
-sistema.adicionar_produto("Tênis", 20)
-
+#excluir = sistema.excluir_produto("Camisas")
+#sistema.adicionar_produto("Quantos planetas do sistema solar têm anéis visíveis a partir da Terra?\na)1\nb)2\nc)3\nd)4\n", 4)
 #estoque_camiseta = sistema.consultar_estoque("Camiseta")
-#print(f"Quantidade de Camisetas em estoque: {estoque_camiseta}")
-
-#sistema.remover_produto("Calça Jeans", 10)
+#sistema.remover_produto("Tênis", 20)
 
 produtos_em_estoque = sistema.listar_produtos()
+
+for produto in produtos_em_estoque:
+    quantidade = sistema.consultar_estoque(produto)
+    print(f"{produto} - {quantidade}")
+
+
+
